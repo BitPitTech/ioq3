@@ -1959,6 +1959,11 @@ static void RawImage_UploadTexture(GLuint texture, byte *data, int x, int y, int
 	qboolean lastMip = qfalse;
 
 	dataFormat = PixelDataFormatFromInternalFormat(internalFormat);
+
+#ifdef EMSCRIPTEN
+	internalFormat = dataFormat;
+#endif
+
 	dataType = picFormat == GL_RGBA16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
 
 	miplevel = 0;
@@ -2172,9 +2177,15 @@ image_t *R_CreateImage2( const char *name, byte *pic, int width, int height, GLe
 	mipWidth = width;
 	mipHeight = height;
 	miplevel = 0;
-	do
+
+#if EMSCRIPTEN
+    internalFormat = dataFormat;
+#endif
+
+    do
 	{
 		lastMip = !mipmap || (mipWidth == 1 && mipHeight == 1);
+
 		if (cubemap)
 		{
 			int i;

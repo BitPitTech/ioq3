@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 // server.h
+#ifndef server_h
+#define server_h
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
@@ -130,6 +132,15 @@ typedef struct netchan_buffer_s {
 	struct netchan_buffer_s *next;
 } netchan_buffer_t;
 
+
+// recording
+typedef struct {
+    fileHandle_t   file;
+    qboolean        recording;
+    qboolean        waiting;
+    char            demo_name[MAX_QPATH];
+} demo_recording_t;
+
 typedef struct client_s {
 	clientState_t	state;
 	char			userinfo[MAX_INFO_STRING];		// name, etc
@@ -199,6 +210,13 @@ typedef struct client_s {
 #ifdef LEGACY_PROTOCOL
 	qboolean		compat;
 #endif
+    
+    char                access_token[1024];
+    qboolean            counted_result;
+    demo_recording_t    demo;
+    int                 synchronized_score;
+
+    int                 hearbeat;
 } client_t;
 
 //=============================================================================
@@ -332,7 +350,7 @@ extern leakyBucket_t outboundLeakyBucket;
 qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period );
 qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period );
 
-void SV_FinalMessage (char *message);
+void SV_FinalMessage (const char *message);
 void QDECL SV_SendServerCommand( client_t *cl, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 
 
@@ -356,7 +374,7 @@ void SV_SetUserinfo( int index, const char *val );
 void SV_GetUserinfo( int index, char *buffer, int bufferSize );
 
 void SV_ChangeMaxClients( void );
-void SV_SpawnServer( char *server, qboolean killBots );
+void SV_SpawnServer( char *server, qboolean killBots, cb_context_t *context );
 
 
 
@@ -493,3 +511,4 @@ void SV_Netchan_Transmit( client_t *client, msg_t *msg);
 int SV_Netchan_TransmitNextFragment(client_t *client);
 qboolean SV_Netchan_Process( client_t *client, msg_t *msg );
 void SV_Netchan_FreeQueue(client_t *client);
+#endif

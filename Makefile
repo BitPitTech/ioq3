@@ -6,6 +6,10 @@
 COMPILE_PLATFORM=$(shell uname | sed -e 's/_.*//' | tr '[:upper:]' '[:lower:]' | sed -e 's/\//_/g')
 COMPILE_ARCH=$(shell uname -m | sed -e 's/i.86/x86/' | sed -e 's/^arm.*/arm/')
 
+BUILD_STANDALONE=1
+
+EMSCRIPTEN=$$HOME/projects/emscripten
+
 ifeq ($(COMPILE_PLATFORM),sunos)
   # Solaris uname and GNU uname differ
   COMPILE_ARCH=$(shell uname -p | sed -e 's/i.86/x86/')
@@ -18,7 +22,7 @@ ifndef BUILD_CLIENT
   BUILD_CLIENT     =
 endif
 ifndef BUILD_SERVER
-  BUILD_SERVER     =
+  BUILD_CLIENT     =
 endif
 ifndef BUILD_GAME_SO
   BUILD_GAME_SO    =
@@ -934,6 +938,87 @@ ifeq ($(PLATFORM),sunos)
 else # ifeq sunos
 
 #############################################################################
+# SETUP AND BUILD -- JS
+#############################################################################
+
+ifeq ($(PLATFORM),js)
+  CC=$(EMSCRIPTEN)/emcc
+  RANLIB=$(EMSCRIPTEN)/emranlib
+  ARCH=js
+
+  # debug optimize flags: --closure 0 --minify 0 -g
+
+  OPTIMIZEVM += -O3 -s WASM=0  # -s  BINARYEN_ASYNC_COMPILATION=1
+  # OPTIMIZEVM += -O3 -s WASM=0 --profiling  # -s  BINARYEN_ASYNC_COMPILATION=1
+  # OPTIMIZEVM += -O2 -g2 -s WASM=0 #-s SAFE_HEAP=1
+
+  OPTIMIZE = $(OPTIMIZEVM)
+
+  BUILD_STANDALONE=1
+
+  HAVE_VM_COMPILED=true
+
+  USE_CURL=0
+  USE_CODEC_VORBIS=0
+  USE_CODEC_OPUS=1
+  USE_MUMBLE=0
+  USE_VOIP=0
+  USE_OPENAL_DLOPEN=0
+  USE_RENDERER_DLOPEN=0
+  USE_LOCAL_HEADERS=0
+
+  BASE_CFLAGS += 
+
+  LIBSYSCOMMON=$(SYSDIR)/sys_common.js
+  LIBSYSBROWSER=$(SYSDIR)/sys_browser.js
+  LIBSYSNODE=$(SYSDIR)/sys_node.js
+  LIBVMJS=$(CMDIR)/vm_js.js
+
+  COMMON_EMCC_FLAGS = $(OPTIMIZE) \
+    --js-library $(LIBSYSCOMMON) \
+    --js-library $(LIBVMJS) \
+    --memory-init-file 0 \
+    -s INVOKE_RUN=0 \
+    -s GL_UNSAFE_OPTS=0 \
+    -s LEGACY_GL_EMULATION=1 \
+    -s RESERVED_FUNCTION_POINTERS=1 \
+    -s TOTAL_MEMORY=234881024
+
+
+#-s OUTLINING_LIMIT=20000 \
+
+
+  CLIENT_EMCC_FLAGS = $(COMMON_EMCC_FLAGS) \
+    --js-library $(LIBSYSBROWSER) \
+    -s USE_SDL=2 \
+    -s INVOKE_RUN=1
+
+  SERVER_EMCC_FLAGS = $(COMMON_EMCC_FLAGS) \
+    --js-library $(LIBSYSNODE) \
+    -s INVOKE_RUN=1
+
+  CLIENT_CFLAGS += $(CLIENT_EMCC_FLAGS)
+  SERVER_CFLAGS += $(SERVER_EMCC_FLAGS)
+
+  CLIENT_LDFLAGS += $(CLIENT_EMCC_FLAGS) \
+    -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_free', '_atof', '_Com_Printf', '_Com_Error', '_Com_ProxyCallback', '_Com_GetCDN', '_Com_GetManifest', '_Z_Malloc', '_Z_Free', '_S_Malloc', '_Cvar_Set', '_Cvar_VariableString', '_Sys_FS_Shutdown', '_Sys_FS_Startup', '_VM_GetCurrent', '_VM_SetCurrent', '_memset', '_memcpy', '_strncpy', '_sin', '_cos', '_atan2', '_sqrt', '_floor', '_ceil', '_acos', '_IsDeveloper', '_Sys_GLCreated', '_Sys_BeginAudioTransaction', '_Sys_CommitAudioTransaction']" \
+    -s EXPORT_NAME=\"ioq3\"
+
+  SERVER_LDFLAGS += $(SERVER_EMCC_FLAGS) \
+    -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_free', '_atof', '_Com_Printf', '_Com_Error', '_Com_ProxyCallback', '_Com_GetCDN', '_Com_GetManifest', '_Z_Malloc', '_Z_Free', '_S_Malloc', '_Cvar_Set', '_Cvar_VariableString', '_Sys_FS_Shutdown', '_Sys_FS_Startup', '_VM_GetCurrent', '_VM_SetCurrent', '_memset', '_memcpy', '_strncpy', '_sin', '_cos', '_atan2', '_sqrt', '_floor', '_ceil', '_acos', '_IsDeveloper', '_CON_SetIsTTY', '_fopen']" \
+    -s EXPORT_NAME=\"ioq3ded\"
+
+  SHLIBEXT=js
+  SHLIBNAME=.$(SHLIBEXT)
+  SHLIBLDFLAGS=$(LDFLAGS) \
+    -s INVOKE_RUN=0 \
+    -s EXPORTED_FUNCTIONS="['_vmMain', '_dllEntry']" \
+    -s SIDE_MODULE=1 \
+    $(OPTIMIZE)
+
+else # ifeq js
+
+#############################################################################
 # SETUP AND BUILD -- GENERIC
 #############################################################################
   BASE_CFLAGS=
@@ -951,6 +1036,7 @@ endif #OpenBSD
 endif #NetBSD
 endif #IRIX
 endif #SunOS
+endif #js
 
 ifndef CC
   CC=gcc
@@ -983,12 +1069,16 @@ ifneq ($(BUILD_CLIENT),0)
   ifneq ($(USE_RENDERER_DLOPEN),0)
     TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT) $(B)/renderer_opengl1_$(SHLIBNAME)
     ifneq ($(BUILD_RENDERER_OPENGL2),0)
-      TARGETS += $(B)/renderer_opengl2_$(SHLIBNAME)
+      ifneq ($(PLATFORM),js)
+        TARGETS += $(B)/renderer_opengl2_$(SHLIBNAME)
+      endif
     endif
   else
     TARGETS += $(B)/$(CLIENTBIN)$(FULLBINEXT)
     ifneq ($(BUILD_RENDERER_OPENGL2),0)
-      TARGETS += $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT)
+      ifneq ($(PLATFORM),js)
+        TARGETS += $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT)
+      endif
     endif
   endif
 endif
@@ -1191,7 +1281,7 @@ endif
 
 define DO_CC
 $(echo_cmd) "CC $<"
-$(Q)$(CC) $(NOTSHLIBCFLAGS) $(CFLAGS) $(CLIENT_CFLAGS) $(OPTIMIZE) -o $@ -c $<
+$(Q)$(CC) $(NOTSHLIBCFLAGS) -DCLIENT=1 $(CFLAGS) $(CLIENT_CFLAGS) $(OPTIMIZE) -o $@ -c $<
 endef
 
 define DO_CC_ALTIVEC
@@ -1281,7 +1371,7 @@ endef
 
 define DO_DED_CC
 $(echo_cmd) "DED_CC $<"
-$(Q)$(CC) $(NOTSHLIBCFLAGS) -DDEDICATED $(CFLAGS) $(SERVER_CFLAGS) $(OPTIMIZE) -o $@ -c $<
+$(Q)$(CC) $(NOTSHLIBCFLAGS) -DDEDICATED=1 $(CFLAGS) $(SERVER_CFLAGS) $(OPTIMIZE) -o $@ -c $<
 endef
 
 define DO_WINDRES
@@ -1376,6 +1466,12 @@ endif
 	@echo ""
 	@echo "  LDFLAGS:"
 	$(call print_wrapped, $(LDFLAGS))
+	@echo ""
+	@echo "  CLIENT_LDFLAGS:"
+	$(call print_wrapped, $(CLIENT_LDFLAGS))
+	@echo ""
+	@echo "  SERVER_LDFLAGS:"
+	$(call print_wrapped, $(SERVER_LDFLAGS))
 	@echo ""
 	@echo "  LIBS:"
 	$(call print_wrapped, $(LIBS))
@@ -1752,13 +1848,14 @@ Q3OBJ = \
   $(B)/client/sys_autoupdater.o \
   $(B)/client/sys_main.o
 
-ifdef MINGW
+ifneq (,$(findstring "$(PLATFORM)", "mingw32" "js"))
   Q3OBJ += \
-    $(B)/client/con_passive.o
+    $(B)/client/sys_emscripten.o
 else
   Q3OBJ += \
     $(B)/client/con_tty.o
 endif
+
 
 Q3R2OBJ = \
   $(B)/renderergl2/tr_animation.o \
@@ -2159,8 +2256,13 @@ ifdef MINGW
     $(B)/client/win_resource.o \
     $(B)/client/sys_win32.o
 else
+ifeq ($(PLATFORM),js)
+  Q3OBJ += \
+    $(B)/client/sys_emscripten.o
+else
   Q3OBJ += \
     $(B)/client/sys_unix.o
+endif
 endif
 
 ifeq ($(PLATFORM),darwin)
@@ -2190,17 +2292,20 @@ $(B)/renderer_opengl2_$(SHLIBNAME): $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
 		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
 else
-$(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) $(LIBSDLMAIN)
+
+ifeq ($(BUILD_RENDERER_OPENGL2), 0)
+$(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) $(LIBSDLMAIN) $(LIBSYSCOMMON) $(LIBSYSBROWSER) $(LIBVMJS)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) \
 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
-
-$(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN)
+else
+$(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN) $(LIBSYSCOMMON) $(LIBSYSBROWSER) $(LIBVMJS)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
 		-o $@ $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
 		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
+endif
 endif
 
 ifneq ($(strip $(LIBSDLMAIN)),)
@@ -2238,6 +2343,7 @@ Q3DOBJ = \
   $(B)/ded/cvar.o \
   $(B)/ded/files.o \
   $(B)/ded/md4.o \
+  $(B)/ded/md5.o \
   $(B)/ded/msg.o \
   $(B)/ded/net_chan.o \
   $(B)/ded/net_ip.o \
@@ -2332,9 +2438,15 @@ ifdef MINGW
     $(B)/ded/sys_win32.o \
     $(B)/ded/con_win32.o
 else
+ifeq ($(PLATFORM),js)
+  Q3DOBJ += \
+    $(B)/ded/sys_emscripten.o \
+    $(B)/ded/con_tty.o
+else
   Q3DOBJ += \
     $(B)/ded/sys_unix.o \
     $(B)/ded/con_tty.o
+endif
 endif
 
 ifeq ($(PLATFORM),darwin)
@@ -2344,7 +2456,7 @@ endif
 
 $(B)/$(SERVERBIN)$(FULLBINEXT): $(Q3DOBJ)
 	$(echo_cmd) "LD $@"
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) $(SERVER_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
 
 
 
@@ -2383,7 +2495,7 @@ Q3CGOBJ_ = \
 Q3CGOBJ = $(Q3CGOBJ_) $(B)/$(BASEGAME)/cgame/cg_syscalls.o
 Q3CGVMOBJ = $(Q3CGOBJ_:%.o=%.asm)
 
-$(B)/$(BASEGAME)/cgame$(SHLIBNAME): $(Q3CGOBJ)
+$(B)/$(BASEGAME)/cgame$(SHLIBNAME): $(Q3CGOBJ) $(LIBVM)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3CGOBJ)
 
@@ -2428,7 +2540,7 @@ MPCGOBJ_ = \
 MPCGOBJ = $(MPCGOBJ_) $(B)/$(MISSIONPACK)/cgame/cg_syscalls.o
 MPCGVMOBJ = $(MPCGOBJ_:%.o=%.asm)
 
-$(B)/$(MISSIONPACK)/cgame$(SHLIBNAME): $(MPCGOBJ)
+$(B)/$(MISSIONPACK)/cgame$(SHLIBNAME): $(MPCGOBJ) $(LIBVM)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(MPCGOBJ)
 
@@ -2478,10 +2590,12 @@ Q3GOBJ_ = \
   $(B)/$(BASEGAME)/qcommon/q_math.o \
   $(B)/$(BASEGAME)/qcommon/q_shared.o
 
+
+
 Q3GOBJ = $(Q3GOBJ_) $(B)/$(BASEGAME)/game/g_syscalls.o
 Q3GVMOBJ = $(Q3GOBJ_:%.o=%.asm)
 
-$(B)/$(BASEGAME)/qagame$(SHLIBNAME): $(Q3GOBJ)
+$(B)/$(BASEGAME)/qagame$(SHLIBNAME): $(Q3GOBJ) $(LIBVM)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3GOBJ)
 
@@ -2532,7 +2646,7 @@ MPGOBJ_ = \
 MPGOBJ = $(MPGOBJ_) $(B)/$(MISSIONPACK)/game/g_syscalls.o
 MPGVMOBJ = $(MPGOBJ_:%.o=%.asm)
 
-$(B)/$(MISSIONPACK)/qagame$(SHLIBNAME): $(MPGOBJ)
+$(B)/$(MISSIONPACK)/qagame$(SHLIBNAME): $(MPGOBJ) $(LIBVM)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(MPGOBJ)
 
@@ -2595,7 +2709,7 @@ Q3UIOBJ_ = \
 Q3UIOBJ = $(Q3UIOBJ_) $(B)/$(MISSIONPACK)/ui/ui_syscalls.o
 Q3UIVMOBJ = $(Q3UIOBJ_:%.o=%.asm)
 
-$(B)/$(BASEGAME)/ui$(SHLIBNAME): $(Q3UIOBJ)
+$(B)/$(BASEGAME)/ui$(SHLIBNAME): $(Q3UIOBJ) $(LIBVM)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3UIOBJ)
 
@@ -2623,7 +2737,7 @@ MPUIOBJ_ = \
 MPUIOBJ = $(MPUIOBJ_) $(B)/$(MISSIONPACK)/ui/ui_syscalls.o
 MPUIVMOBJ = $(MPUIOBJ_:%.o=%.asm)
 
-$(B)/$(MISSIONPACK)/ui$(SHLIBNAME): $(MPUIOBJ)
+$(B)/$(MISSIONPACK)/ui$(SHLIBNAME): $(MPUIOBJ) $(LIBVM)
 	$(echo_cmd) "LD $@"
 	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(MPUIOBJ)
 
@@ -2844,7 +2958,7 @@ $(B)/$(MISSIONPACK)/qcommon/%.o: $(CMDIR)/%.c
 
 $(B)/$(MISSIONPACK)/qcommon/%.asm: $(CMDIR)/%.c $(Q3LCC)
 	$(DO_Q3LCC_MISSIONPACK)
-
+	
 
 #############################################################################
 # MISC

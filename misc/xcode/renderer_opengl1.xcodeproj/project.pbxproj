@@ -36,7 +36,6 @@
 		274FAC64178FB14500B17C7A /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC5E178FB14500B17C7A /* q_math.c */; };
 		274FAC65178FB14500B17C7A /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC5F178FB14500B17C7A /* q_shared.c */; };
 		274FAC6B178FB17E00B17C7A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274FAC6A178FB17E00B17C7A /* OpenGL.framework */; };
-		274FAC6D178FB19200B17C7A /* libSDL-1.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 274FAC6C178FB19200B17C7A /* libSDL-1.2.0.dylib */; };
 		274FAC7E178FB1C800B17C7A /* tr_font.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC72178FB1C800B17C7A /* tr_font.c */; };
 		274FAC7F178FB1C800B17C7A /* tr_image_bmp.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC73178FB1C800B17C7A /* tr_image_bmp.c */; };
 		274FAC80178FB1C800B17C7A /* tr_image_jpg.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC74178FB1C800B17C7A /* tr_image_jpg.c */; };
@@ -45,6 +44,8 @@
 		274FAC83178FB1C800B17C7A /* tr_image_tga.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC77178FB1C800B17C7A /* tr_image_tga.c */; };
 		274FAC84178FB1C800B17C7A /* tr_noise.c in Sources */ = {isa = PBXBuildFile; fileRef = 274FAC78178FB1C800B17C7A /* tr_noise.c */; };
 		274FAC88178FB1D600B17C7A /* libjpeg8.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 274FAC87178FB1D600B17C7A /* libjpeg8.a */; };
+		C8585A55209606ED0007961A /* libSDL2main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8585A53209606ED0007961A /* libSDL2main.a */; };
+		C8585A60209608B60007961A /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C8585A5F209608B60007961A /* libSDL2-2.0.0.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,7 +83,6 @@
 		274FAC60178FB14500B17C7A /* q_shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = q_shared.h; sourceTree = "<group>"; };
 		274FAC61178FB14500B17C7A /* qcommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qcommon.h; sourceTree = "<group>"; };
 		274FAC6A178FB17E00B17C7A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		274FAC6C178FB19200B17C7A /* libSDL-1.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL-1.2.0.dylib"; path = "../../code/libs/macosx/libSDL-1.2.0.dylib"; sourceTree = SOURCE_ROOT; };
 		274FAC6F178FB1C800B17C7A /* iqm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iqm.h; sourceTree = "<group>"; };
 		274FAC70178FB1C800B17C7A /* qgl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qgl.h; sourceTree = "<group>"; };
 		274FAC71178FB1C800B17C7A /* tr_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tr_common.h; sourceTree = "<group>"; };
@@ -96,6 +96,8 @@
 		274FAC79178FB1C800B17C7A /* tr_public.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tr_public.h; sourceTree = "<group>"; };
 		274FAC7A178FB1C800B17C7A /* tr_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tr_types.h; sourceTree = "<group>"; };
 		274FAC87178FB1D600B17C7A /* libjpeg8.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libjpeg8.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8585A53209606ED0007961A /* libSDL2main.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSDL2main.a; path = ../../code/libs/macosx/libSDL2main.a; sourceTree = "<group>"; };
+		C8585A5F209608B60007961A /* libSDL2-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL2-2.0.0.dylib"; path = "../../code/libs/macosx/libSDL2-2.0.0.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,9 +105,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8585A60209608B60007961A /* libSDL2-2.0.0.dylib in Frameworks */,
+				C8585A55209606ED0007961A /* libSDL2main.a in Frameworks */,
 				274FAC88178FB1D600B17C7A /* libjpeg8.a in Frameworks */,
 				274FAC6B178FB17E00B17C7A /* OpenGL.framework in Frameworks */,
-				274FAC6D178FB19200B17C7A /* libSDL-1.2.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,6 +201,8 @@
 		274FAC68178FB15500B17C7A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C8585A5F209608B60007961A /* libSDL2-2.0.0.dylib */,
+				C8585A53209606ED0007961A /* libSDL2main.a */,
 				274FAC6A178FB17E00B17C7A /* OpenGL.framework */,
 			);
 			name = Frameworks;
@@ -207,7 +212,6 @@
 			isa = PBXGroup;
 			children = (
 				274FAC87178FB1D600B17C7A /* libjpeg8.a */,
-				274FAC6C178FB19200B17C7A /* libSDL-1.2.0.dylib */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -327,7 +331,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -351,7 +354,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -361,7 +364,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -379,7 +381,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -389,10 +391,11 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../code/jpeg-8c\"",
-					"\"$(SRCROOT)/../../code/SDL12/include\"",
+					"\"$(SRCROOT)/../../code/SDL2/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../code/libs/macosx\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx10.13;
 			};
 			name = Debug;
 		};
@@ -401,10 +404,11 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../code/jpeg-8c\"",
-					"\"$(SRCROOT)/../../code/SDL12/include\"",
+					"\"$(SRCROOT)/../../code/SDL2/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../../code/libs/macosx\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx10.13;
 			};
 			name = Release;
 		};

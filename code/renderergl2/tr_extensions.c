@@ -30,14 +30,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 #include "tr_dsa.h"
 
-#define GLE(ret, name, ...) name##proc * qgl##name;
-QGL_1_3_PROCS;
-QGL_1_5_PROCS;
-QGL_2_0_PROCS;
-QGL_ARB_framebuffer_object_PROCS;
-QGL_ARB_vertex_array_object_PROCS;
-QGL_EXT_direct_state_access_PROCS;
-#undef GLE
+#if EMSCRIPTEN
+#   define GLE(ret, name, ...) name##proc * qgl##name;
+    QGL_1_3_PROCS;
+    QGL_1_5_PROCS;
+    QGL_2_0_PROCS;
+    QGL_ES_2_0_PROCS;
+    QGL_ARB_framebuffer_object_PROCS;
+    QGL_ARB_vertex_array_object_PROCS;
+    QGL_EXT_direct_state_access_PROCS;
+#   undef GLE
+#else
+#   define GLE(ret, name, ...) name##proc * qgl##name;
+    QGL_1_3_PROCS;
+    QGL_1_5_PROCS;
+    QGL_2_0_PROCS;
+    QGL_ARB_framebuffer_object_PROCS;
+    QGL_ARB_vertex_array_object_PROCS;
+    QGL_EXT_direct_state_access_PROCS;
+#   undef GLE
+#endif
 
 void GLimp_InitExtraExtensions()
 {
@@ -47,7 +59,7 @@ void GLimp_InitExtraExtensions()
 	qboolean q_gl_version_at_least_3_2;
 
 	// Check OpenGL version
-	if ( !QGL_VERSION_ATLEAST( 2, 0 ) )
+	if ( !(QGL_VERSION_ATLEAST( 2, 0 ) || QGLES_VERSION_ATLEAST(2, 0)))
 		ri.Error(ERR_FATAL, "OpenGL 2.0 required!");
 	ri.Printf(PRINT_ALL, "...using OpenGL %s\n", glConfig.version_string);
 
@@ -155,6 +167,7 @@ void GLimp_InitExtraExtensions()
 	// OpenGL 3.2 - GL_ARB_seamless_cube_map
 	extension = "GL_ARB_seamless_cube_map";
 	glRefConfig.seamlessCubeMap = qfalse;
+#if !EMSCRIPTEN
 	if (q_gl_version_at_least_3_2 || SDL_GL_ExtensionSupported(extension))
 	{
 		glRefConfig.seamlessCubeMap = !!r_arb_seamless_cube_map->integer;
@@ -165,6 +178,7 @@ void GLimp_InitExtraExtensions()
 	{
 		ri.Printf(PRINT_ALL, result[2], extension);
 	}
+#endif
 
 	// Determine GLSL version
 	if (1)

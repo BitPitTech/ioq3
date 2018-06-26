@@ -830,13 +830,16 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 		Com_Printf( "WARNING: NET_IPSocket: socket: %s\n", NET_ErrorString() );
 		return newsocket;
 	}
-	// make it non-blocking
-	if( ioctlsocket( newsocket, FIONBIO, &_true ) == SOCKET_ERROR ) {
-		Com_Printf( "WARNING: NET_IPSocket: ioctl FIONBIO: %s\n", NET_ErrorString() );
-		*err = socketError;
-		closesocket(newsocket);
-		return INVALID_SOCKET;
-	}
+
+	#if !EMSCRIPTEN
+		// make it non-blocking
+		if( ioctlsocket( newsocket, FIONBIO, &_true ) == SOCKET_ERROR ) {
+			Com_Printf( "WARNING: NET_IPSocket: ioctl FIONBIO: %s\n", NET_ErrorString() );
+			*err = socketError;
+			closesocket(newsocket);
+			return INVALID_SOCKET;
+		}
+	#endif
 
 	// make it broadcast capable
 	if( setsockopt( newsocket, SOL_SOCKET, SO_BROADCAST, (char *) &i, sizeof(i) ) == SOCKET_ERROR ) {
@@ -902,6 +905,7 @@ SOCKET NET_IP6Socket( char *net_interface, int port, struct sockaddr_in6 *bindto
 		return newsocket;
 	}
 
+#if !EMSCRIPTEN
 	// make it non-blocking
 	if( ioctlsocket( newsocket, FIONBIO, &_true ) == SOCKET_ERROR ) {
 		Com_Printf( "WARNING: NET_IP6Socket: ioctl FIONBIO: %s\n", NET_ErrorString() );
@@ -909,6 +913,7 @@ SOCKET NET_IP6Socket( char *net_interface, int port, struct sockaddr_in6 *bindto
 		closesocket(newsocket);
 		return INVALID_SOCKET;
 	}
+#endif
 
 #ifdef IPV6_V6ONLY
 	{
@@ -1416,6 +1421,7 @@ NET_GetCvars
 ====================
 */
 static qboolean NET_GetCvars( void ) {
+	int port;
 	int modified;
 
 #ifdef DEDICATED
@@ -1436,12 +1442,18 @@ static qboolean NET_GetCvars( void ) {
 	net_ip6 = Cvar_Get( "net_ip6", "::", CVAR_LATCH );
 	modified += net_ip6->modified;
 	net_ip6->modified = qfalse;
-	
-	net_port = Cvar_Get( "net_port", va( "%i", PORT_SERVER ), CVAR_LATCH );
+
+#if EMSCRIPTEN && !DEDICATED
+	Com_RandomBytes((byte*)&port, sizeof(int));
+	port &= 0xffff;
+#else
+	port = PORT_SERVER;
+#endif
+	net_port = Cvar_Get( "net_port", va( "%i", port ), CVAR_LATCH );
 	modified += net_port->modified;
 	net_port->modified = qfalse;
 	
-	net_port6 = Cvar_Get( "net_port6", va( "%i", PORT_SERVER ), CVAR_LATCH );
+	net_port6 = Cvar_Get( "net_port6", va( "%i", port ), CVAR_LATCH );
 	modified += net_port6->modified;
 	net_port6->modified = qfalse;
 

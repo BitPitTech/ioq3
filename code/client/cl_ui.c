@@ -1001,11 +1001,17 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_MEMCPY:
-		Com_Memcpy( VMA(1), VMA(2), args[3] );
-		return 0;
+        // a safety measure because of OA :(
+        if (VMA(1) != VMA(2)) {
+            Com_Memcpy( VMA(1), VMA(2), args[3] );
+        }
+        return 0;
 
 	case UI_STRNCPY:
-		strncpy( VMA(1), VMA(2), args[3] );
+        // bug in UI code, needs fixing
+        if (VMA(1) != VMA(2)) {
+            strncpy( VMA(1), VMA(2), args[3] );
+        }
 		return args[1];
 
 	case UI_SIN:
@@ -1117,6 +1123,7 @@ void CL_InitUI( void ) {
 	}
 
 	uivm = VM_Create( "ui", CL_UISystemCalls, interpret );
+
 	if ( !uivm ) {
 		Com_Error( ERR_FATAL, "VM_Create on UI failed" );
 	}

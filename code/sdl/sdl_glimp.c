@@ -269,10 +269,16 @@ static qboolean GLimp_GetProcAddresses( void ) {
 	if ( QGL_VERSION_ATLEAST( 1, 2 ) ) {
 		QGL_1_1_PROCS;
 		QGL_DESKTOP_1_1_PROCS;
-	} else if ( qglesMajorVersion == 1 && qglesMinorVersion >= 1 ) {
+#if EMSCRIPTEN
+    } else if (QGLES_VERSION_ATLEAST(2, 0)) {
+        QGL_ES_2_0_PROCS;
+#endif
+    } else if ( qglesMajorVersion == 1 && qglesMinorVersion >= 1 ) {
 		// OpenGL ES 1.1 (2.0 is not backward compatible)
 		QGL_1_1_PROCS;
+#if EMSCRIPTEN
 		QGL_ES_1_1_PROCS;
+#endif
 		// error so this doesn't segfault due to NULL desktop GL functions being used
 		Com_Error( ERR_FATAL, "Unsupported OpenGL Version: %s\n", version );
 	} else {
@@ -333,6 +339,11 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 
 	if ( r_allowResize->integer )
 		flags |= SDL_WINDOW_RESIZABLE;
+
+#if EMSCRIPTEN
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles");
+#endif
+
 
 #ifdef USE_ICON
 	icon = SDL_CreateRGBSurfaceFrom(
@@ -646,6 +657,10 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 				continue;
 			}
 
+#if EMSCRIPTEN
+            Sys_GLCreated();
+#endif
+
 			if ( !GLimp_GetProcAddresses() )
 			{
 				ri.Printf( PRINT_ALL, "GLimp_GetProcAddresses() failed\n" );
@@ -662,11 +677,18 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 		qglClear( GL_COLOR_BUFFER_BIT );
 		SDL_GL_SwapWindow( SDL_window );
 
+#if !EMSCRIPTEN
 		if( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
 		{
 			ri.Printf( PRINT_DEVELOPER, "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError( ) );
 		}
+#endif
 
+#if EMSCRIPTEN
+        glConfig.colorBits = 24;
+        glConfig.depthBits = 24;
+        glConfig.stencilBits = 8;
+#else
 		SDL_GL_GetAttribute( SDL_GL_RED_SIZE, &realColorBits[0] );
 		SDL_GL_GetAttribute( SDL_GL_GREEN_SIZE, &realColorBits[1] );
 		SDL_GL_GetAttribute( SDL_GL_BLUE_SIZE, &realColorBits[2] );
@@ -674,7 +696,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 		SDL_GL_GetAttribute( SDL_GL_STENCIL_SIZE, &glConfig.stencilBits );
 
 		glConfig.colorBits = realColorBits[0] + realColorBits[1] + realColorBits[2];
-
+#endif
 		ri.Printf( PRINT_ALL, "Using %d color bits, %d depth, %d stencil display.\n",
 				glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
 		break;
@@ -688,7 +710,9 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 		return RSERR_INVALID_MODE;
 	}
 
+#if !EMSCRIPTEN
 	GLimp_DetectAvailableModes();
+#endif
 
 	glstring = (char *) qglGetString (GL_RENDERER);
 	ri.Printf( PRINT_ALL, "GL_RENDERER: %s\n", glstring );
@@ -753,6 +777,9 @@ GLimp_InitExtensions
 */
 static void GLimp_InitExtensions( void )
 {
+#if EMSCRIPTEN
+    return;
+#endif
 	if ( !r_allowExtensions->integer )
 	{
 		ri.Printf( PRINT_ALL, "* IGNORING OPENGL EXTENSIONS *\n" );
@@ -981,6 +1008,7 @@ success:
 		glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;
 	Q_strncpyz( glConfig.version_string, (char *) qglGetString (GL_VERSION), sizeof( glConfig.version_string ) );
 
+#if !EMSCRIPTEN
 	// manually create extension list if using OpenGL 3
 	if ( qglGetStringi )
 	{
@@ -1011,6 +1039,7 @@ success:
 	{
 		Q_strncpyz( glConfig.extensions_string, (char *) qglGetString (GL_EXTENSIONS), sizeof( glConfig.extensions_string ) );
 	}
+#endif
 
 	// initialize extensions
 	GLimp_InitExtensions( );

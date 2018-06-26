@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <signal.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <sys/select.h>
 #include <sys/time.h>
 
 /*
@@ -44,7 +45,7 @@ called before and after a stdout or stderr output
 =============================================================
 */
 
-extern qboolean stdinIsATTY;
+static qboolean stdinIsATTY;
 static qboolean stdin_active;
 // general flag to tell about tty console mode
 static qboolean ttycon_on = qfalse;
@@ -72,6 +73,38 @@ static int hist_current = -1, hist_count = 0;
 #else
 #define TTY_CONSOLE_PROMPT "]"
 #endif
+
+/*
+==================
+CON_IsTTY
+==================
+*/
+qboolean CON_IsTTY() {
+	return stdinIsATTY;
+}
+
+/*
+==================
+CON_SetIsTTY
+==================
+*/
+void CON_SetIsTTY(qboolean isTTY) {
+	stdinIsATTY = isTTY;
+}
+
+/*
+==================
+CON_FlushIn
+
+Flush stdin, I suspect some terminals are sending a LOT of shit
+FIXME relevant?
+==================
+*/
+static void CON_FlushIn( void )
+{
+	char key;
+	while (read(STDIN_FILENO, &key, 1)!=-1);
+}
 
 /*
 ==================
@@ -279,16 +312,18 @@ void CON_Init( void )
 
 	// If the process is backgrounded (running non interactively)
 	// then SIGTTIN or SIGTOU is emitted, if not caught, turns into a SIGSTP
-	signal(SIGTTIN, SIG_IGN);
+#if !EMSCRIPTEN
+    signal(SIGTTIN, SIG_IGN);
 	signal(SIGTTOU, SIG_IGN);
 
 	// If SIGCONT is received, reinitialize console
 	signal(SIGCONT, CON_SigCont);
+#endif
 
 	// Make stdin reads non-blocking
 	fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL, 0) | O_NONBLOCK );
 
-	if (!stdinIsATTY)
+	if (!CON_IsTTY())
 	{
 		Com_Printf("tty console mode disabled\n");
 		ttycon_on = qfalse;
@@ -362,7 +397,7 @@ char *CON_Input( void )
 			{
 				if (key == '\n')
 				{
-#ifndef DEDICATED
+#if CLIENT
 					// if not in the game explicitly prepend a slash if needed
 					if (clc.state != CA_ACTIVE && con_autochat->integer && TTY_con.cursor &&
 						TTY_con.buffer[0] != '/' && TTY_con.buffer[0] != '\\')

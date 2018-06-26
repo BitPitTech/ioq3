@@ -50,7 +50,6 @@
 		2758B9C6178FBBAC007F6582 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758B9C0178FBBAC007F6582 /* q_shared.c */; };
 		2758B9CC178FBC8B007F6582 /* libjpeg8.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2758B9CB178FBC8B007F6582 /* libjpeg8.a */; };
 		2758B9CE178FBCBC007F6582 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2758B9CD178FBCBC007F6582 /* OpenGL.framework */; };
-		2758B9D0178FBCDC007F6582 /* libSDL-1.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2758B9CF178FBCDC007F6582 /* libSDL-1.2.0.dylib */; };
 		2758BA2C178FCFC0007F6582 /* bokeh_fp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758B9F3178FCFC0007F6582 /* bokeh_fp.c */; };
 		2758BA2D178FCFC0007F6582 /* bokeh_vp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758B9F5178FCFC0007F6582 /* bokeh_vp.c */; };
 		2758BA2E178FCFC0007F6582 /* calclevels4x_fp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758B9F7178FCFC0007F6582 /* calclevels4x_fp.c */; };
@@ -79,6 +78,10 @@
 		2758BA45178FCFC1007F6582 /* texturecolor_vp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758BA26178FCFC0007F6582 /* texturecolor_vp.c */; };
 		2758BA46178FCFC1007F6582 /* tonemap_fp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758BA28178FCFC0007F6582 /* tonemap_fp.c */; };
 		2758BA47178FCFC1007F6582 /* tonemap_vp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2758BA2A178FCFC0007F6582 /* tonemap_vp.c */; };
+		C8585A59209606FC0007961A /* libSDL2main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8585A57209606FC0007961A /* libSDL2main.a */; };
+		C8585A5D209607720007961A /* tr_dsa.c in Sources */ = {isa = PBXBuildFile; fileRef = C8585A5B209607720007961A /* tr_dsa.c */; };
+		C8585A5E209607720007961A /* tr_image_dds.c in Sources */ = {isa = PBXBuildFile; fileRef = C8585A5C209607720007961A /* tr_image_dds.c */; };
+		C8585A62209608CE0007961A /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C8585A61209608CE0007961A /* libSDL2-2.0.0.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -139,7 +142,6 @@
 		2758B9C2178FBBAC007F6582 /* qcommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qcommon.h; sourceTree = "<group>"; };
 		2758B9CB178FBC8B007F6582 /* libjpeg8.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libjpeg8.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2758B9CD178FBCBC007F6582 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		2758B9CF178FBCDC007F6582 /* libSDL-1.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL-1.2.0.dylib"; path = "../../code/libs/macosx/libSDL-1.2.0.dylib"; sourceTree = SOURCE_ROOT; };
 		2758B9F3178FCFC0007F6582 /* bokeh_fp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bokeh_fp.c; sourceTree = "<group>"; };
 		2758B9F4178FCFC0007F6582 /* bokeh_fp.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bokeh_fp.glsl; sourceTree = "<group>"; };
 		2758B9F5178FCFC0007F6582 /* bokeh_vp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bokeh_vp.c; sourceTree = "<group>"; };
@@ -197,6 +199,11 @@
 		2758BA29178FCFC0007F6582 /* tonemap_fp.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tonemap_fp.glsl; sourceTree = "<group>"; };
 		2758BA2A178FCFC0007F6582 /* tonemap_vp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tonemap_vp.c; sourceTree = "<group>"; };
 		2758BA2B178FCFC0007F6582 /* tonemap_vp.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tonemap_vp.glsl; sourceTree = "<group>"; };
+		C8585A57209606FC0007961A /* libSDL2main.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libSDL2main.a; path = ../../code/libs/macosx/libSDL2main.a; sourceTree = "<group>"; };
+		C8585A5A209607720007961A /* tr_dsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tr_dsa.h; sourceTree = "<group>"; };
+		C8585A5B209607720007961A /* tr_dsa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tr_dsa.c; sourceTree = "<group>"; };
+		C8585A5C209607720007961A /* tr_image_dds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tr_image_dds.c; sourceTree = "<group>"; };
+		C8585A61209608CE0007961A /* libSDL2-2.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libSDL2-2.0.0.dylib"; path = "../../code/libs/macosx/libSDL2-2.0.0.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,9 +211,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8585A62209608CE0007961A /* libSDL2-2.0.0.dylib in Frameworks */,
+				C8585A59209606FC0007961A /* libSDL2main.a in Frameworks */,
 				2758B9CC178FBC8B007F6582 /* libjpeg8.a in Frameworks */,
 				2758B9CE178FBCBC007F6582 /* OpenGL.framework in Frameworks */,
-				2758B9D0178FBCDC007F6582 /* libSDL-1.2.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,6 +263,9 @@
 		2758B91A178FBB51007F6582 /* renderergl2 */ = {
 			isa = PBXGroup;
 			children = (
+				C8585A5B209607720007961A /* tr_dsa.c */,
+				C8585A5A209607720007961A /* tr_dsa.h */,
+				C8585A5C209607720007961A /* tr_image_dds.c */,
 				2758B9D1178FBD4E007F6582 /* glsl */,
 				2758B95F178FBB77007F6582 /* tr_animation.c */,
 				2758B960178FBB77007F6582 /* tr_backend.c */,
@@ -329,6 +340,8 @@
 		2758B9C9178FBC6F007F6582 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C8585A61209608CE0007961A /* libSDL2-2.0.0.dylib */,
+				C8585A57209606FC0007961A /* libSDL2main.a */,
 				2758B9CD178FBCBC007F6582 /* OpenGL.framework */,
 			);
 			name = Frameworks;
@@ -337,7 +350,6 @@
 		2758B9CA178FBC7B007F6582 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				2758B9CF178FBCDC007F6582 /* libSDL-1.2.0.dylib */,
 				2758B9CB178FBC8B007F6582 /* libjpeg8.a */,
 			);
 			name = Libraries;
@@ -527,6 +539,7 @@
 				2758B9B5178FBB8E007F6582 /* tr_image_jpg.c in Sources */,
 				2758B9B6178FBB8E007F6582 /* tr_image_pcx.c in Sources */,
 				2758B9B7178FBB8E007F6582 /* tr_image_png.c in Sources */,
+				C8585A5D209607720007961A /* tr_dsa.c in Sources */,
 				2758B9B8178FBB8E007F6582 /* tr_image_tga.c in Sources */,
 				2758B9B9178FBB8E007F6582 /* tr_noise.c in Sources */,
 				2758B9C3178FBBAC007F6582 /* puff.c in Sources */,
@@ -546,6 +559,7 @@
 				2758BA37178FCFC0007F6582 /* fogpass_vp.c in Sources */,
 				2758BA38178FCFC0007F6582 /* generic_fp.c in Sources */,
 				2758BA39178FCFC0007F6582 /* generic_vp.c in Sources */,
+				C8585A5E209607720007961A /* tr_image_dds.c in Sources */,
 				2758BA3A178FCFC0007F6582 /* lightall_fp.c in Sources */,
 				2758BA3B178FCFC1007F6582 /* lightall_vp.c in Sources */,
 				2758BA3C178FCFC1007F6582 /* pshadow_fp.c in Sources */,
@@ -570,7 +584,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -594,7 +607,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -604,7 +617,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -622,7 +634,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -632,7 +644,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../code/jpeg-8c\"",
-					"\"$(SRCROOT)/../../code/SDL12/include\"",
+					"\"$(SRCROOT)/../../code/SDL2/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../code/libs/macosx\"",
@@ -647,7 +659,7 @@
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../code/jpeg-8c\"",
-					"\"$(SRCROOT)/../../code/SDL12/include\"",
+					"\"$(SRCROOT)/../../code/SDL2/include\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../code/libs/macosx\"",

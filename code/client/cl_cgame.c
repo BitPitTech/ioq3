@@ -418,7 +418,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_MILLISECONDS:
 		return Sys_Milliseconds();
 	case CG_CVAR_REGISTER:
-		Cvar_Register( VMA(1), VMA(2), VMA(3), args[4] ); 
+		Cvar_Register( VMA(1), VMA(2), VMA(3), args[4] );
 		return 0;
 	case CG_CVAR_UPDATE:
 		Cvar_Update( VMA(1) );
@@ -498,6 +498,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		CM_TransformedBoxTrace( VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], VMA(8), VMA(9), /*int capsule*/ qtrue );
 		return 0;
 	case CG_CM_MARKFRAGMENTS:
+#if EMSCRIPTEN
+        return 0;
+#endif
 		return re.MarkFragments( args[1], VMA(2), VMA(3), args[4], VMA(5), args[6], VMA(7) );
 	case CG_S_STARTSOUND:
 		S_StartSound( VMA(1), args[2], args[3], args[4] );
@@ -617,9 +620,14 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_MEMCPY:
 		Com_Memcpy( VMA(1), VMA(2), args[3] );
 		return 0;
-	case CG_STRNCPY:
-		strncpy( VMA(1), VMA(2), args[3] );
-		return args[1];
+        case CG_STRNCPY: {
+            char *a = VMA(1);
+            char *b = VMA(2);
+            if (a != b) { // openarena
+                strncpy( a, b, args[3] );
+            }
+            return args[1];
+        }
 	case CG_SIN:
 		return FloatAsInt( sin( VMF(1) ) );
 	case CG_COS:
@@ -767,8 +775,16 @@ void CL_InitCGame( void ) {
 
 	// clear anything that got printed
 	Con_ClearNotify ();
-}
 
+	// set pure checksums
+	CL_SendPureChecksums();
+
+	CL_WritePacket();
+	CL_WritePacket();
+	CL_WritePacket();
+
+	CL_ReadDemoConnectionMessages();
+}
 
 /*
 ====================

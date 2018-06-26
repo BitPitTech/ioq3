@@ -113,7 +113,6 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 }
 
 
-
 /*
 ==================
 SV_WriteSnapshotToClient
@@ -151,6 +150,13 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 			lastframe = 0;
 		}
 	}
+    
+    if (client->demo.recording && client->demo.waiting) {
+        Com_Printf("Recording stopped waiting\n");
+        oldframe = NULL;
+        lastframe = 0;
+        client->demo.waiting = qfalse;
+    }
 
 	MSG_WriteByte (msg, svc_snapshot);
 
@@ -269,6 +275,7 @@ SV_AddEntToSnapshot
 ===============
 */
 static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntity_t *gEnt, snapshotEntityNumbers_t *eNums ) {
+    
 	// if we have already added this entity to this snapshot, don't add again
 	if ( svEnt->snapshotCounter == sv.snapshotCounter ) {
 		return;

@@ -29,7 +29,11 @@
 # endif
 
 # include <stdlib.h>
+#if USE_LOCAL_HEADERS
+# include "opusfile.h"
+#else
 # include <opusfile.h>
+#endif
 
 typedef struct OggOpusLink OggOpusLink;
 

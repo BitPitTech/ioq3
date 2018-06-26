@@ -37,6 +37,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //============================================================================
 
 //
+// generic callback support
+//
+struct cb_context_s;
+
+typedef void (*result_cb)(struct cb_context_s *req, int status);
+
+typedef struct cb_context_s {
+	void *data;
+	result_cb cb;
+} cb_context_t;
+
+
+extern unsigned cb_pending;
+cb_context_t *_cb_create_context(result_cb cb, int data_size);
+#define cb_num_pending() cb_pending
+#define cb_create_context(cb, t) _cb_create_context(cb, sizeof(t))
+#define cb_create_context_no_data(cb) _cb_create_context(cb, 0)
+#define cb_run(context, status) context->cb(context, status)
+#define cb_free_context(context) \
+	if (context->data != NULL) { free(context->data); } \
+	free(context); \
+	cb_pending--
+
+//
 // msg.c
 //
 typedef struct {
@@ -366,7 +390,7 @@ void	VM_Forced_Unload_Start(void);
 void	VM_Forced_Unload_Done(void);
 vm_t	*VM_Restart(vm_t *vm, qboolean unpure);
 
-intptr_t		QDECL VM_Call( vm_t *vm, int callNum, ... );
+intptr_t		QDECL VM_Call( vm_t *vm, int callNum, ...);
 
 void	VM_Debug( int level );
 
@@ -381,7 +405,6 @@ static ID_INLINE float _vmf(intptr_t x)
 	return fi.f;
 }
 #define	VMF(x)	_vmf(args[x])
-
 
 /*
 ==============================================================
@@ -607,11 +630,11 @@ issues.
 
 qboolean FS_Initialized( void );
 
-void	FS_InitFilesystem ( void );
-void	FS_Shutdown( qboolean closemfp );
+void	FS_InitFilesystem ( cb_context_t *after );
+void	FS_Shutdown( qboolean closemfp, cb_context_t *after );
 
-qboolean FS_ConditionalRestart(int checksumFeed, qboolean disconnect);
-void	FS_Restart( int checksumFeed );
+void	FS_ConditionalRestart(int checksumFeed, qboolean disconnect, cb_context_t *after);
+void	FS_Restart( int checksumFeed, cb_context_t *after );
 // shutdown and restart the filesystem so changes to fs_gamedir can take effect
 
 void FS_AddGameDirectory( const char *path, const char *dir );
@@ -825,8 +848,8 @@ void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void 		QDECL Com_DPrintf( const char *fmt, ... ) __attribute__ ((format (printf, 1, 2)));
 void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__ ((noreturn, format(printf, 2, 3)));
-void 		Com_Quit_f( void ) __attribute__ ((noreturn));
-void		Com_GameRestart(int checksumFeed, qboolean disconnect);
+void 		Com_Quit_f( void );
+void		Com_GameRestart(int checksumFeed, qboolean disconnect, cb_context_t *after);
 
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
@@ -961,10 +984,14 @@ void Hunk_Log( void);
 void Com_TouchMemory( void );
 
 // commandLine should not include the executable name (argv[0])
-void Com_Init( char *commandLine );
+void Com_Init( char *commandLine, cb_context_t *after );
 void Com_Frame( void );
 void Com_Shutdown( void );
 
+#if EMSCRIPTEN
+const char *Com_GetCDN(void);
+const char *Com_GetManifest(void);
+#endif
 
 /*
 ==============================================================
@@ -1039,6 +1066,11 @@ void S_ClearSoundBuffer( void );
 
 void SCR_DebugGraph (float value);	// FIXME: move logging to common?
 
+#if EMSCRIPTEN
+const char *CL_GetCDN(void);
+const char *CL_GetManifest(void);
+#endif
+
 // AVI files have the start of pixel lines 4 byte-aligned
 #define AVI_LINE_PADDING 4
 
@@ -1046,7 +1078,7 @@ void SCR_DebugGraph (float value);	// FIXME: move logging to common?
 // server interface
 //
 void SV_Init( void );
-void SV_Shutdown( char *finalmsg );
+void SV_Shutdown(const char *finalmsg );
 void SV_Frame( int msec );
 void SV_PacketEvent( netadr_t from, msg_t *msg );
 int SV_FrameMsec(void);
@@ -1080,7 +1112,7 @@ NON-PORTABLE SYSTEM SERVICES
 void	Sys_Init (void);
 
 // general development dll loading for virtual machine testing
-void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...),
+void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11),
 				  intptr_t (QDECL *systemcalls)(intptr_t, ...) );
 void	Sys_UnloadDll( void *dllHandle );
 
@@ -1141,6 +1173,14 @@ void	Sys_Sleep(int msec);
 qboolean Sys_LowPhysicalMemory( void );
 
 void Sys_SetEnv(const char *name, const char *value);
+
+#if EMSCRIPTEN
+void Sys_GLCreated();
+
+// audio optimizations
+void Sys_BeginAudioTransaction();
+void Sys_CommitAudioTransaction();
+#endif
 
 typedef enum
 {
@@ -1230,3 +1270,5 @@ extern huffman_t clientHuffTables;
 #define DLF_NO_DISCONNECT 8
 
 #endif // _QCOMMON_H_
+
+qboolean Sys_exit_if_hosted();

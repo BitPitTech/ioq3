@@ -194,6 +194,11 @@ typedef struct {
 	int			lastExecutedServerCommand;		// last server command grabbed or executed with CL_GetServerCommand
 	char		serverCommands[MAX_RELIABLE_COMMANDS][MAX_STRING_CHARS];
 
+#if EMSCRIPTEN
+	char fs_cdn[MAX_OSPATH];
+	char fs_manifest[BIG_INFO_STRING];
+#endif
+
 	// file transfer from server
 	fileHandle_t download;
 	char		downloadTempName[MAX_OSPATH];
@@ -470,6 +475,7 @@ void CL_Snd_Restart_f (void);
 void CL_StartDemoLoop( void );
 void CL_NextDemo( void );
 void CL_ReadDemoMessage( void );
+void CL_ReadDemoConnectionMessages( void );
 void CL_StopRecord_f(void);
 
 void CL_InitDownloads(void);
@@ -504,6 +510,7 @@ void CL_SendCmd (void);
 void CL_ClearState (void);
 void CL_ReadPackets (void);
 
+void CL_SendPureChecksums(void);
 void CL_WritePacket( void );
 void IN_CenterView (void);
 

@@ -177,6 +177,108 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 	GLE(void, ValidateProgram, GLuint program) \
 	GLE(void, VertexAttribPointer, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) \
 
+// OpenGL 2.0 ES, was GL_ARB_shading_language_100, GL_ARB_vertex_program, GL_ARB_shader_objects, and GL_ARB_vertex_shader
+#define QGL_ES_2_0_PROCS \
+    /*1.0*/ \
+    /*GLE(void, AlphaFunc, GLenum func, GLclampf ref)*/ \
+    GLE(void, BindTexture, GLenum target, GLuint texture) \
+    GLE(void, BlendFunc, GLenum sfactor, GLenum dfactor) \
+    GLE(void, ClearColor, GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) \
+    GLE(void, Clear, GLbitfield mask) \
+    GLE(void, ClearStencil, GLint s) \
+    /*GLE(void, Color4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)*/ \
+    GLE(void, ColorMask, GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) \
+    GLE(void, ColorPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) \
+    GLE(void, CopyTexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) \
+    GLE(void, CullFace, GLenum mode) \
+    GLE(void, DeleteTextures, GLsizei n, const GLuint *textures) \
+    GLE(void, DepthFunc, GLenum func) \
+    GLE(void, DepthMask, GLboolean flag) \
+    /*GLE(void, DisableClientState, GLenum cap)*/ \
+    GLE(void, Disable, GLenum cap) \
+    GLE(void, DrawArrays, GLenum mode, GLint first, GLsizei count) \
+    GLE(void, DrawElements, GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) \
+    GLE(void, EnableClientState, GLenum cap) \
+    GLE(void, Enable, GLenum cap) \
+    GLE(void, Finish, void) \
+    GLE(void, Flush, void) \
+    GLE(void, GenTextures, GLsizei n, GLuint *textures ) \
+    GLE(void, GetBooleanv, GLenum pname, GLboolean *params) \
+    GLE(GLenum, GetError, void) \
+    GLE(void, GetIntegerv, GLenum pname, GLint *params) \
+    GLE(const GLubyte *, GetString, GLenum name) \
+    GLE(void, LineWidth, GLfloat width) \
+    GLE(void, LoadIdentity, void) \
+    GLE(void, LoadMatrixf, const GLfloat *m) \
+    GLE(void, MatrixMode, GLenum mode) \
+    GLE(void, PolygonOffset, GLfloat factor, GLfloat units) \
+    /*GLE(void, PopMatrix, void) \
+    GLE(void, PushMatrix, void)*/ \
+    GLE(void, ReadPixels, GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels) \
+    GLE(void, Scissor, GLint x, GLint y, GLsizei width, GLsizei height) \
+    /*GLE(void, ShadeModel, GLenum mode)*/ \
+    GLE(void, StencilFunc, GLenum func, GLint ref, GLuint mask) \
+    GLE(void, StencilMask, GLuint mask) \
+    GLE(void, StencilOp, GLenum fail, GLenum zfail, GLenum zpass) \
+    GLE(void, TexCoordPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) \
+    /*GLE(void, TexEnvf, GLenum target, GLenum pname, GLfloat param)*/ \
+    GLE(void, TexImage2D, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels) \
+    GLE(void, TexParameterf, GLenum target, GLenum pname, GLfloat param) \
+    GLE(void, TexParameteri, GLenum target, GLenum pname, GLint param) \
+    GLE(void, TexSubImage2D, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels) \
+    /*GLE(void, Translatef, GLfloat x, GLfloat y, GLfloat z)*/ \
+    GLE(void, VertexPointer, GLint size, GLenum type, GLsizei stride, const GLvoid *ptr) \
+    GLE(void, Viewport, GLint x, GLint y, GLsizei width, GLsizei height) \
+    /*1.1*/ \
+    /*GLE(void, ArrayElement, GLint i)*/ \
+    /*GLE(void, Begin, GLenum mode)*/ \
+    GLE(void, ClearDepth, GLclampd depth) \
+    /*GLE(void, ClipPlane, GLenum plane, const GLdouble *equation)*/ \
+    /*GLE(void, Color3f, GLfloat red, GLfloat green, GLfloat blue)*/ \
+    /*GLE(void, Color4ubv, const GLubyte *v)*/ \
+    GLE(void, DepthRange, GLclampd near_val, GLclampd far_val) \
+    /*GLE(void, DrawBuffer, GLenum mode)*/ \
+    /*GLE(void, End, void)*/ \
+    GLE(void, Frustum, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val) \
+    /*GLE(void, Ortho, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near_val, GLdouble far_val)*/ \
+    /*GLE(void, PolygonMode, GLenum face, GLenum mode)*/ \
+    /*GLE(void, TexCoord2f, GLfloat s, GLfloat t) \
+    GLE(void, TexCoord2fv, const GLfloat *v) \
+    GLE(void, Vertex2f, GLfloat x, GLfloat y) \
+    GLE(void, Vertex3f, GLfloat x, GLfloat y, GLfloat z) \
+    GLE(void, Vertex3fv, const GLfloat *v)*/ \
+    /*2.0*/ \
+    GLE(void, AttachShader, GLuint program, GLuint shader) \
+    GLE(void, BindAttribLocation, GLuint program, GLuint index, const GLchar *name) \
+    GLE(void, CompileShader, GLuint shader) \
+    GLE(GLuint, CreateProgram, void) \
+    GLE(GLuint, CreateShader, GLenum type) \
+    GLE(void, DeleteProgram, GLuint program) \
+    GLE(void, DeleteShader, GLuint shader) \
+    GLE(void, DetachShader, GLuint program, GLuint shader) \
+    GLE(void, DisableVertexAttribArray, GLuint index) \
+    GLE(void, EnableVertexAttribArray, GLuint index) \
+    GLE(void, GetActiveUniform, GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name) \
+    GLE(void, GetProgramiv, GLuint program, GLenum pname, GLint *params) \
+    GLE(void, GetProgramInfoLog, GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) \
+    GLE(void, GetShaderiv, GLuint shader, GLenum pname, GLint *params) \
+    GLE(void, GetShaderInfoLog, GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog) \
+    GLE(void, GetShaderSource, GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source) \
+    GLE(GLint, GetUniformLocation, GLuint program, const GLchar *name) \
+    GLE(void, LinkProgram, GLuint program) \
+    GLE(void, ShaderSource, GLuint shader, GLsizei count, const GLchar* *string, const GLint *length) \
+    GLE(void, UseProgram, GLuint program) \
+    GLE(void, Uniform1f, GLint location, GLfloat v0) \
+    GLE(void, Uniform2f, GLint location, GLfloat v0, GLfloat v1) \
+    GLE(void, Uniform3f, GLint location, GLfloat v0, GLfloat v1, GLfloat v2) \
+    GLE(void, Uniform4f, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) \
+    GLE(void, Uniform1i, GLint location, GLint v0) \
+    GLE(void, Uniform1fv, GLint location, GLsizei count, const GLfloat *value) \
+    GLE(void, UniformMatrix4fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value) \
+    GLE(void, ValidateProgram, GLuint program) \
+    GLE(void, VertexAttribPointer, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) \
+
+
 // GL_NVX_gpu_memory_info
 #ifndef GL_NVX_gpu_memory_info
 #define GL_NVX_gpu_memory_info

@@ -281,10 +281,12 @@ void VM_LoadSymbols( vm_t *vm ) {
 		prev = &sym->next;
 		sym->next = NULL;
 
+#if !EMSCRIPTEN
 		// convert value from an instruction number to a code offset
 		if ( value >= 0 && value < numInstructions ) {
 			value = vm->instructionPointers[value];
 		}
+#endif
 
 		sym->symValue = value;
 		Q_strncpyz( sym->symName, token, chars + 1 );
@@ -653,6 +655,11 @@ vm_t *VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 
 	vm->compiled = qfalse;
 
+#if EMSCRIPTEN
+    // load the map file
+    VM_LoadSymbols( vm );
+#endif
+
 #ifdef NO_VM_COMPILED
 	if(interpret >= VMI_COMPILED) {
 		Com_Printf("Architecture doesn't have a bytecode compiler, using interpreter\n");
@@ -674,8 +681,10 @@ vm_t *VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 	// free the original file
 	FS_FreeFile( header );
 
+#if !EMSCRIPTEN
 	// load the map file
 	VM_LoadSymbols( vm );
+#endif
 
 	// the stack is implicitly at the end of the image
 	vm->programStack = vm->dataMask + 1;
@@ -1008,3 +1017,13 @@ void VM_BlockCopy(unsigned int dest, unsigned int src, size_t n)
 
 	Com_Memcpy(currentVM->dataBase + dest, currentVM->dataBase + src, n);
 }
+
+#if EMSCRIPTEN
+vm_t *VM_GetCurrent() {
+    return currentVM;
+}
+
+void VM_SetCurrent(vm_t *vm) {
+    currentVM = vm;
+}
+#endif

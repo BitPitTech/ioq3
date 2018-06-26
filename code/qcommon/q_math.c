@@ -642,6 +642,44 @@ void SetPlaneSignbits (cplane_t *out) {
 }
 
 
+// This was original version
+//int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct cplane_s *p)
+//{
+//    float    dist[2];
+//    int        sides, b, i;
+//
+//    // fast axial cases
+//    if (p->type < 3)
+//    {
+//        if (p->dist <= emins[p->type])
+//        return 1;
+//        if (p->dist >= emaxs[p->type])
+//        return 2;
+//        return 3;
+//    }
+//
+//    // general case
+//    dist[0] = dist[1] = 0;
+//    if (p->signbits < 8) // >= 8: default case is original code (dist[0]=dist[1]=0)
+//    {
+//        for (i=0 ; i<3 ; i++)
+//        {
+//            b = (p->signbits >> i) & 1;
+//            dist[ b] += p->normal[i]*emaxs[i];
+//            dist[!b] += p->normal[i]*emins[i];
+//        }
+//    }
+//
+//    sides = 0;
+//    if (dist[0] >= p->dist)
+//    sides = 1;
+//    if (dist[1] < p->dist)
+//    sides |= 2;
+//
+//    return sides;
+//}
+
+
 /*
 ==================
 BoxOnPlaneSide
@@ -651,8 +689,13 @@ Returns 1, 2, or 1 + 2
 */
 int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 {
-	float	dist[2];
-	int		sides, b, i;
+//    float    dist[2];
+    float dist0 = 0, dist1 = 0;
+    int        sides;
+
+    float normal0 = p->normal[0];
+    float normal1 = p->normal[1];
+    float normal2 = p->normal[2];
 
 	// fast axial cases
 	if (p->type < 3)
@@ -664,22 +707,77 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 		return 3;
 	}
 
-	// general case
-	dist[0] = dist[1] = 0;
-	if (p->signbits < 8) // >= 8: default case is original code (dist[0]=dist[1]=0)
-	{
-		for (i=0 ; i<3 ; i++)
-		{
-			b = (p->signbits >> i) & 1;
-			dist[ b] += p->normal[i]*emaxs[i];
-			dist[!b] += p->normal[i]*emins[i];
-		}
-	}
+    switch (p->signbits) {
+        case 0:
+            dist0 += normal0 * emaxs[0];
+            dist1 += normal0 * emins[0];
+            dist0 += normal1 * emaxs[1];
+            dist1 += normal1 * emins[1];
+            dist0 += normal2 * emaxs[2];
+            dist1 += normal2 * emins[2];
+            break;
+        case 1:
+            dist1 += normal0 * emaxs[0];
+            dist0 += normal0 * emins[0];
+            dist0 += normal1 * emaxs[1];
+            dist1 += normal1 * emins[1];
+            dist0 += normal2 * emaxs[2];
+            dist1 += normal2 * emins[2];
+            break;
+        case 2:
+            dist0 += normal0 * emaxs[0];
+            dist1 += normal0 * emins[0];
+            dist1 += normal1 * emaxs[1];
+            dist0 += normal1 * emins[1];
+            dist0 += normal2 * emaxs[2];
+            dist1 += normal2 * emins[2];
+            break;
+        case 3:
+            dist1 += normal0 * emaxs[0];
+            dist0 += normal0 * emins[0];
+            dist1 += normal1 * emaxs[1];
+            dist0 += normal1 * emins[1];
+            dist0 += normal2 * emaxs[2];
+            dist1 += normal2 * emins[2];
+            break;
+        case 4:
+            dist0 += normal0 * emaxs[0];
+            dist1 += normal0 * emins[0];
+            dist0 += normal1 * emaxs[1];
+            dist1 += normal1 * emins[1];
+            dist1 += normal2 * emaxs[2];
+            dist0 += normal2 * emins[2];
+            break;
+        case 5:
+            dist1 += normal0 * emaxs[0];
+            dist0 += normal0 * emins[0];
+            dist0 += normal1 * emaxs[1];
+            dist1 += normal1 * emins[1];
+            dist1 += normal2 * emaxs[2];
+            dist0 += normal2 * emins[2];
+            break;
+        case 6:
+            dist0 += normal0 * emaxs[0];
+            dist1 += normal0 * emins[0];
+            dist1 += normal1 * emaxs[1];
+            dist0 += normal1 * emins[1];
+            dist1 += normal2 * emaxs[2];
+            dist0 += normal2 * emins[2];
+            break;
+        case 7:
+            dist1 += normal0 * emaxs[0];
+            dist0 += normal0 * emins[0];
+            dist1 += normal1 * emaxs[1];
+            dist0 += normal1 * emins[1];
+            dist1 += normal2 * emaxs[2];
+            dist0 += normal2 * emins[2];
+            break;
+    }
 
 	sides = 0;
-	if (dist[0] >= p->dist)
+	if (dist0 >= p->dist)
 		sides = 1;
-	if (dist[1] < p->dist)
+	if (dist1 < p->dist)
 		sides |= 2;
 
 	return sides;

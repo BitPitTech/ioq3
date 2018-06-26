@@ -1876,10 +1876,10 @@ void	GL_Cull( int cullType );
 #define GLS_DEPTHFUNC_GREATER                   0x00040000
 #define GLS_DEPTHFUNC_BITS                      0x00060000
 
-#define GLS_ATEST_GT_0							0x10000000
-#define GLS_ATEST_LT_80							0x20000000
-#define GLS_ATEST_GE_80							0x40000000
-#define		GLS_ATEST_BITS						0x70000000
+#define GLS_ATEST_GT_0                                                 0x10000000
+#define GLS_ATEST_LT_80                                                        0x20000000
+#define GLS_ATEST_GE_80                                                        0x40000000
+#define                GLS_ATEST_BITS                                          0x70000000
 
 #define GLS_DEFAULT			GLS_DEPTHMASK_TRUE
 
@@ -2429,6 +2429,10 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 		          int image_width, int image_height, byte *image_buffer, int padding);
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
+
+#if EMSCRIPEN
+void RE_UpdateMode(glconfig_t *glconfigOut);
+#endif
 
 
 #endif //TR_LOCAL_H

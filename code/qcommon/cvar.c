@@ -1462,3 +1462,9 @@ void Cvar_Init (void)
 	Cmd_AddCommand ("cvar_modified", Cvar_ListModified_f);
 	Cmd_AddCommand ("cvar_restart", Cvar_Restart_f);
 }
+
+#if EMSCRIPTEN
+int IsDeveloper() {
+    return com_developer->integer;
+}
+#endif

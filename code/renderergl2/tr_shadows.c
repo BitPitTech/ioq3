@@ -125,12 +125,14 @@ void R_RenderShadowEdges( void ) {
 			// if it doesn't share the edge with another front facing
 			// triangle, it is a sil edge
 			if ( hit[ 1 ] == 0 ) {
+#if !EMSCRIPTEN
 				qglBegin( GL_TRIANGLE_STRIP );
 				qglVertex3fv( tess.xyz[ i ] );
 				qglVertex3fv( shadowXyz[ i ] );
 				qglVertex3fv( tess.xyz[ i2 ] );
 				qglVertex3fv( shadowXyz[ i2 ] );
 				qglEnd();
+#endif
 				c_edges++;
 			} else {
 				c_rejected++;
@@ -208,7 +210,9 @@ void RB_ShadowTessEnd( void ) {
 
 	GL_BindToTMU( tr.whiteImage, TB_COLORMAP );
 	GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO );
-	qglColor3f( 0.2f, 0.2f, 0.2f );
+#if !EMSCRIPTEN
+    qglColor3f( 0.2f, 0.2f, 0.2f );
+#endif
 
 	// don't write to the color buffer
 	qglGetBooleanv(GL_COLOR_WRITEMASK, rgba);
@@ -260,12 +264,15 @@ void RB_ShadowFinish( void ) {
 
     qglLoadIdentity ();
 
+#if !EMSCRIPTEN
 	qglColor3f( 0.6f, 0.6f, 0.6f );
-	GL_State( GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO );
+#endif
+    GL_State( GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO );
 
 //	qglColor3f( 1, 0, 0 );
 //	GL_State( GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO );
 
+#if !EMSCRIPTEN
 	qglBegin( GL_QUADS );
 	qglVertex3f( -100, 100, -10 );
 	qglVertex3f( 100, 100, -10 );
@@ -274,6 +281,7 @@ void RB_ShadowFinish( void ) {
 	qglEnd ();
 
 	qglColor4f(1,1,1,1);
+#endif
 	qglDisable( GL_STENCIL_TEST );
 }
 

@@ -1,0 +1,19 @@
+{
+  "name": "quakejs",
+  "version": "0.0.1",
+  "bin": {
+    "quakejs-content": "bin/content.js",
+    "quakejs-master": "bin/master.js",
+    "quakejs-repak": "bin/repak.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/inolen/quakejs.git"
+  },
+  "author": "Anthony Pesch",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "ws": "~0.4.29"
+  }
+}

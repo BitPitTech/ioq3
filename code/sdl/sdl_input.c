@@ -1081,8 +1081,10 @@ static void IN_ProcessEvents( void )
 						case SDL_BUTTON_LEFT:   b = K_MOUSE1;     break;
 						case SDL_BUTTON_MIDDLE: b = K_MOUSE3;     break;
 						case SDL_BUTTON_RIGHT:  b = K_MOUSE2;     break;
+#if !EMSCRIPTEN
 						case SDL_BUTTON_X1:     b = K_MOUSE4;     break;
 						case SDL_BUTTON_X2:     b = K_MOUSE5;     break;
+#endif
 						default:                b = K_AUX1 + ( e.button.button - SDL_BUTTON_X2 + 1 ) % 16; break;
 					}
 					Com_QueueEvent( in_eventTime, SE_KEY, b,

@@ -27,6 +27,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../sys/sys_local.h"
 #include "../sys/sys_loadlib.h"
 
+#if EMSCRIPTEN
+#include "../ui/ui_shared.h"
+#endif
+
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"
 #endif
@@ -128,8 +132,8 @@ clientStatic_t		cls;
 vm_t				*cgvm;
 
 char				cl_reconnectArgs[MAX_OSPATH];
-char				cl_oldGame[MAX_QPATH];
-qboolean			cl_oldGameSet;
+// char				cl_oldGame[MAX_QPATH];
+// qboolean			cl_oldGameSet;
 
 // Structure containing functions exported from refresh DLL
 refexport_t	re;
@@ -1061,6 +1065,35 @@ static void CL_CompleteDemoName( char *args, int argNum )
 
 /*
 ====================
+CL_ReadDemoConnectionMessages
+
+This function is called at the end of CL_PlayDemo_f, and after
+any potentially asynchronous operation (CL_InitCGame).
+====================
+*/
+void CL_ReadDemoConnectionMessages( void ) {
+	if (!clc.demoplaying || clc.state >= CA_PRIMED) {
+		return;
+	}
+
+	// read demo messages until connected
+	while (clc.state < CA_LOADING) {
+		CL_ReadDemoMessage();
+
+		// an async function was called, stop reading, once the function
+		// completes it'll call back in here
+		if (cb_num_pending()) {
+			return;
+		}
+	}
+
+	// don't get the first snapshot this frame, to prevent the long
+	// time from the gamestate load from messing causing a time skip
+	clc.firstDemoFrameSkipped = qfalse;
+}
+
+/*
+====================
 CL_PlayDemo_f
 
 demo <demoname>
@@ -1147,15 +1180,8 @@ void CL_PlayDemo_f( void ) {
 		clc.compat = qfalse;
 #endif
 
-	// read demo messages until connected
-	while ( clc.state >= CA_CONNECTED && clc.state < CA_PRIMED ) {
-		CL_ReadDemoMessage();
-	}
-	// don't get the first snapshot this frame, to prevent the long
-	// time from the gamestate load from messing causing a time skip
-	clc.firstDemoFrameSkipped = qfalse;
+	CL_ReadDemoConnectionMessages();
 }
-
 
 /*
 ====================
@@ -1355,16 +1381,16 @@ static void CL_UpdateGUID( const char *prefix, int prefix_len )
 			prefix, prefix_len ) );
 }
 
-static void CL_OldGame(void)
-{
-	if(cl_oldGameSet)
-	{
-		// change back to previous fs_game
-		cl_oldGameSet = qfalse;
-		Cvar_Set2("fs_game", cl_oldGame, qtrue);
-		FS_ConditionalRestart(clc.checksumFeed, qfalse);
-	}
-}
+// static void CL_OldGame(void)
+// {
+// 	if(cl_oldGameSet)
+// 	{
+// 		// change back to previous fs_game
+// 		cl_oldGameSet = qfalse;
+// 		Cvar_Set2("fs_game", cl_oldGame, qtrue);
+// 		FS_ConditionalRestart(clc.checksumFeed, qfalse);
+// 	}
+// }
 
 /*
 =====================
@@ -1475,10 +1501,10 @@ void CL_Disconnect( qboolean showMainMenu ) {
 
 	CL_UpdateGUID( NULL, 0 );
 
-	if(!noGameRestart)
-		CL_OldGame();
-	else
-		noGameRestart = qfalse;
+	// if(!noGameRestart)
+	// 	CL_OldGame();
+	// else
+	// 	noGameRestart = qfalse;
 }
 
 
@@ -1927,8 +1953,60 @@ we also have to reload the UI and CGame because the renderer
 doesn't know what graphics to reload
 =================
 */
-void CL_Vid_Restart_f( void ) {
+void CL_Vid_Restart_f_after_FS_ConditionalRestart(cb_context_t *context, int gameDirChanged) {
+	cb_free_context(context);
 
+	if (gameDirChanged) {
+		return;
+	}
+
+	// if not running a server clear the whole hunk
+	if(com_sv_running->integer)
+	{
+		// clear all the client data on the hunk
+		Hunk_ClearToMark();
+	}
+	else
+	{
+		// clear the whole hunk
+		Hunk_Clear();
+	}
+
+	// shutdown the UI
+	CL_ShutdownUI();
+	// shutdown the CGame
+	CL_ShutdownCGame();
+	// shutdown the renderer and clear the renderer interface
+	CL_ShutdownRef();
+	// client is no longer pure untill new checksums are sent
+	CL_ResetPureClientAtServer();
+	// clear pak references
+	FS_ClearPakReferences( FS_UI_REF | FS_CGAME_REF );
+	// reinitialize the filesystem if the game directory or checksum has changed
+
+	cls.rendererStarted = qfalse;
+	cls.uiStarted = qfalse;
+	cls.cgameStarted = qfalse;
+	cls.soundRegistered = qfalse;
+
+	// unpause so the cgame definately gets a snapshot and renders a frame
+	Cvar_Set("cl_paused", "0");
+
+	// initialize the renderer interface
+	CL_InitRef();
+
+	// startup all the client stuff
+	CL_StartHunkUsers(qfalse);
+
+	// start the cgame if connected
+	if(clc.state > CA_CONNECTED && clc.state != CA_CINEMATIC)
+	{
+		cls.cgameStarted = qtrue;
+		CL_InitCGame();
+	}
+}
+
+void CL_Vid_Restart_f( void ) {
 	// Settings may have changed so stop recording now
 	if( CL_VideoRecording( ) ) {
 		CL_CloseAVI( );
@@ -1940,55 +2018,7 @@ void CL_Vid_Restart_f( void ) {
 	// don't let them loop during the restart
 	S_StopAllSounds();
 
-	if(!FS_ConditionalRestart(clc.checksumFeed, qtrue))
-	{
-		// if not running a server clear the whole hunk
-		if(com_sv_running->integer)
-		{
-			// clear all the client data on the hunk
-			Hunk_ClearToMark();
-		}
-		else
-		{
-			// clear the whole hunk
-			Hunk_Clear();
-		}
-	
-		// shutdown the UI
-		CL_ShutdownUI();
-		// shutdown the CGame
-		CL_ShutdownCGame();
-		// shutdown the renderer and clear the renderer interface
-		CL_ShutdownRef();
-		// client is no longer pure until new checksums are sent
-		CL_ResetPureClientAtServer();
-		// clear pak references
-		FS_ClearPakReferences( FS_UI_REF | FS_CGAME_REF );
-		// reinitialize the filesystem if the game directory or checksum has changed
-
-		cls.rendererStarted = qfalse;
-		cls.uiStarted = qfalse;
-		cls.cgameStarted = qfalse;
-		cls.soundRegistered = qfalse;
-
-		// unpause so the cgame definitely gets a snapshot and renders a frame
-		Cvar_Set("cl_paused", "0");
-
-		// initialize the renderer interface
-		CL_InitRef();
-
-		// startup all the client stuff
-		CL_StartHunkUsers(qfalse);
-
-		// start the cgame if connected
-		if(clc.state > CA_CONNECTED && clc.state != CA_CINEMATIC)
-		{
-			cls.cgameStarted = qtrue;
-			CL_InitCGame();
-			// send pure checksums
-			CL_SendPureChecksums();
-		}
-	}
+	FS_ConditionalRestart(clc.checksumFeed, qtrue, cb_create_context_no_data(CL_Vid_Restart_f_after_FS_ConditionalRestart));
 }
 
 /*
@@ -2079,15 +2109,37 @@ void CL_Clientinfo_f( void ) {
 
 //====================================================================
 
+
 /*
 =================
 CL_DownloadsComplete
 
-Called when all downloading has been completed
+Called when all downloading has been completed.
+IMPORTANT NOTE: It's assumed that nothing expects this function to be
+synchronous.
 =================
 */
-void CL_DownloadsComplete( void ) {
 
+void CL_DownloadsComplete_after_FS_Restart( cb_context_t *context, int status ) {
+	cb_free_context(context);
+
+#ifdef USE_CURL
+	if( clc.cURLDisconnected ) {
+		clc.cURLDisconnected = qfalse;
+		CL_Reconnect_f();
+	}
+	else
+#endif
+	{
+		// inform the server so we get new gamestate info
+		CL_AddReliableCommand("donedl", qfalse);
+
+		// by sending the donedl command we request a new gamestate
+		// so we don't want to load stuff yet
+	}
+}
+
+void CL_DownloadsComplete( void ) {
 #ifdef USE_CURL
 	// if we downloaded with cURL
 	if(clc.cURLUsed) { 
@@ -2095,11 +2147,9 @@ void CL_DownloadsComplete( void ) {
 		CL_cURL_Shutdown();
 		if( clc.cURLDisconnected ) {
 			if(clc.downloadRestart) {
-				FS_Restart(clc.checksumFeed);
 				clc.downloadRestart = qfalse;
+				FS_Restart(clc.checksumFeed, cb_create_context_no_data(CL_DownloadsComplete_after_FS_Restart));
 			}
-			clc.cURLDisconnected = qfalse;
-			CL_Reconnect_f();
 			return;
 		}
 	}
@@ -2109,13 +2159,8 @@ void CL_DownloadsComplete( void ) {
 	if (clc.downloadRestart) {
 		clc.downloadRestart = qfalse;
 
-		FS_Restart(clc.checksumFeed); // We possibly downloaded a pak, restart the file system to load it
-
-		// inform the server so we get new gamestate info
-		CL_AddReliableCommand("donedl", qfalse);
-
-		// by sending the donedl command we request a new gamestate
-		// so we don't want to load stuff yet
+		// We possibly downloaded a pak, restart the file system to load it
+		FS_Restart(clc.checksumFeed, cb_create_context_no_data(CL_DownloadsComplete_after_FS_Restart));
 		return;
 	}
 
@@ -2143,13 +2188,6 @@ void CL_DownloadsComplete( void ) {
 	// initialize the CGame
 	cls.cgameStarted = qtrue;
 	CL_InitCGame();
-
-	// set pure checksums
-	CL_SendPureChecksums();
-
-	CL_WritePacket();
-	CL_WritePacket();
-	CL_WritePacket();
 }
 
 /*
@@ -2294,6 +2332,7 @@ and determine if we need to download them
 void CL_InitDownloads(void) {
   char missingfiles[1024];
 
+#if !EMSCRIPTEN
   if ( !(cl_allowDownload->integer & DLF_ENABLE) )
   {
     // autodownload is disabled on the client
@@ -2323,7 +2362,8 @@ void CL_InitDownloads(void) {
 		}
 
 	}
-		
+#endif
+
 	CL_DownloadsComplete();
 }
 
@@ -2929,7 +2969,6 @@ CL_Frame
 ==================
 */
 void CL_Frame ( int msec ) {
-
 	if ( !com_cl_running->integer ) {
 		return;
 	}
@@ -2961,6 +3000,10 @@ void CL_Frame ( int msec ) {
 		&& !com_sv_running->integer && uivm ) {
 		// if disconnected, bring up the menu
 		S_StopAllSounds();
+
+        if (Sys_exit_if_hosted()) {
+            return;
+        }
 		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
 	}
 
@@ -3500,7 +3543,7 @@ void CL_Init( void ) {
 	{
 		CL_ClearState();
 		clc.state = CA_DISCONNECTED;	// no longer CA_UNINITIALIZED
-		cl_oldGameSet = qfalse;
+		// cl_oldGameSet = qfalse;
 	}
 
 	cls.realtime = 0;

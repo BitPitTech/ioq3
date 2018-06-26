@@ -39,3 +39,8 @@ profile
 *.sdf
 *.opensdf
 *.suo
+
+# emscripten
+####################
+node_modules/
+base

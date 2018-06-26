@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../../Makefile">
+   </FileRef>
+   <FileRef
       location = "group:cgame.xcodeproj">
    </FileRef>
    <FileRef
@@ -24,9 +27,6 @@
    </FileRef>
    <FileRef
       location = "group:jpeg8.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:speex.xcodeproj">
    </FileRef>
    <FileRef
       location = "container:ioquake3.xcodeproj">

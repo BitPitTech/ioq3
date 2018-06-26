@@ -481,8 +481,12 @@ qboolean S_AL_BufferInit( void )
 	numSfx = 0;
 
 	// Load the default sound, and lock it
-	default_sfx = S_AL_BufferFind("sound/feedback/hit.wav");
-	S_AL_BufferUse(default_sfx);
+#if EMSCRIPTEN
+	default_sfx = S_AL_BufferFind("sound/misc/silence.opus");
+#else
+    default_sfx = S_AL_BufferFind("sound/misc/silence.opus");
+#endif
+    S_AL_BufferUse(default_sfx);
 	knownSfx[default_sfx].isLocked = qtrue;
 
 	// All done
@@ -812,31 +816,32 @@ static void S_AL_SrcSetup(srcHandle_t src, sfxHandle_t sfx, alSrcPriority_t prio
 	curSource->scaleGain = curSource->curGain;
 	curSource->local = local;
 
-	// Set up OpenAL source
-	if(sfx >= 0)
-	{
-        	// Mark the SFX as used, and grab the raw AL buffer
-        	S_AL_BufferUse(sfx);
-        	qalSourcei(curSource->alSource, AL_BUFFER, S_AL_BufferGet(sfx));
-	}
-
-	qalSourcef(curSource->alSource, AL_PITCH, 1.0f);
+    qalSourcef(curSource->alSource, AL_PITCH, 1.0f);
 	S_AL_Gain(curSource->alSource, curSource->curGain);
 	qalSourcefv(curSource->alSource, AL_POSITION, vec3_origin);
-	qalSourcefv(curSource->alSource, AL_VELOCITY, vec3_origin);
+    qalSourcefv(curSource->alSource, AL_VELOCITY, vec3_origin);
 	qalSourcei(curSource->alSource, AL_LOOPING, AL_FALSE);
 	qalSourcef(curSource->alSource, AL_REFERENCE_DISTANCE, s_alMinDistance->value);
 
 	if(local)
 	{
-		qalSourcei(curSource->alSource, AL_SOURCE_RELATIVE, AL_TRUE);
-		qalSourcef(curSource->alSource, AL_ROLLOFF_FACTOR, 0.0f);
-	}
+        qalSourcei(curSource->alSource, AL_SOURCE_RELATIVE, AL_TRUE);
+        qalSourcef(curSource->alSource, AL_ROLLOFF_FACTOR, 0.0f);
+    }
 	else
 	{
 		qalSourcei(curSource->alSource, AL_SOURCE_RELATIVE, AL_FALSE);
 		qalSourcef(curSource->alSource, AL_ROLLOFF_FACTOR, s_alRolloff->value);
 	}
+
+    // Set up OpenAL source
+    if(sfx >= 0)
+    {
+        // Mark the SFX as used, and grab the raw AL buffer
+        S_AL_BufferUse(sfx);
+        ALuint buffer = S_AL_BufferGet(sfx);
+        qalSourcei(curSource->alSource, AL_BUFFER, buffer);
+    }
 }
 
 /*
@@ -2618,6 +2623,9 @@ qboolean S_AL_Init( soundInterface_t *si )
 		return qfalse;
 	}
 	qalcMakeContextCurrent( alContext );
+
+    ALfloat listenerOri[]= {0.0,0.0,1.0, 0.0,1.0,0.0};
+    qalListenerfv(AL_ORIENTATION, listenerOri);
 
 	// Initialize sources, buffers, music
 	S_AL_BufferInit( );

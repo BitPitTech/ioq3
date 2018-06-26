@@ -229,7 +229,7 @@ MASTER SERVER FUNCTIONS
 SV_MasterHeartbeat
 
 Send a message to the masters every few minutes to
-let it know we are alive, and log information.
+let it know we are alive, and log information.w
 We will also have a heartbeat sent when a server
 changes from empty to non-empty, and full to non-full,
 but not on every player enter or exit.
@@ -239,6 +239,7 @@ but not on every player enter or exit.
 #define	MASTERDNS_MSEC	24*60*60*1000
 void SV_MasterHeartbeat(const char *message)
 {
+    return;
 	static netadr_t	adr[MAX_MASTER_SERVERS][2]; // [2] for v4 and v6 address for the same address string.
 	int			i;
 	int			res;
