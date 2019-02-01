@@ -1001,11 +1001,11 @@ ifeq ($(PLATFORM),js)
   SERVER_CFLAGS += $(SERVER_EMCC_FLAGS)
 
   CLIENT_LDFLAGS += $(CLIENT_EMCC_FLAGS) \
-    -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_free', '_atof', '_Com_Printf', '_Com_Error', '_Com_ProxyCallback', '_Com_GetCDN', '_Com_GetManifest', '_Z_Malloc', '_Z_Free', '_S_Malloc', '_Cvar_Set', '_Cvar_VariableString', '_Sys_FS_Shutdown', '_Sys_FS_Startup', '_VM_GetCurrent', '_VM_SetCurrent', '_memset', '_memcpy', '_strncpy', '_sin', '_cos', '_atan2', '_sqrt', '_floor', '_ceil', '_acos', '_IsDeveloper', '_Sys_GLCreated', '_Sys_BeginAudioTransaction', '_Sys_CommitAudioTransaction']" \
+    -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_free', '_atof', '_Com_Printf', '_Com_Error', '_Com_ProxyCallback', '_Com_GetCDN', '_Com_GetManifest', '_Z_Malloc', '_Z_Free', '_S_Malloc', '_Cvar_Set', '_Cvar_VariableString', '_Sys_FS_Shutdown', '_Sys_FS_Startup', '_VM_GetCurrent', '_VM_SetCurrent', '_memset', '_memcpy', '_strncpy', '_IsDeveloper', '_Sys_GLCreated', '_Sys_BeginAudioTransaction', '_Sys_CommitAudioTransaction']" \
     -s EXPORT_NAME=\"ioq3\"
 
   SERVER_LDFLAGS += $(SERVER_EMCC_FLAGS) \
-    -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_free', '_atof', '_Com_Printf', '_Com_Error', '_Com_ProxyCallback', '_Com_GetCDN', '_Com_GetManifest', '_Z_Malloc', '_Z_Free', '_S_Malloc', '_Cvar_Set', '_Cvar_VariableString', '_Sys_FS_Shutdown', '_Sys_FS_Startup', '_VM_GetCurrent', '_VM_SetCurrent', '_memset', '_memcpy', '_strncpy', '_sin', '_cos', '_atan2', '_sqrt', '_floor', '_ceil', '_acos', '_IsDeveloper', '_CON_SetIsTTY', '_fopen']" \
+    -s EXPORTED_FUNCTIONS="['_main', '_malloc', '_free', '_atof', '_Com_Printf', '_Com_Error', '_Com_ProxyCallback', '_Com_GetCDN', '_Com_GetManifest', '_Z_Malloc', '_Z_Free', '_S_Malloc', '_Cvar_Set', '_Cvar_VariableString', '_Sys_FS_Shutdown', '_Sys_FS_Startup', '_VM_GetCurrent', '_VM_SetCurrent', '_memset', '_memcpy', '_strncpy', '_IsDeveloper', '_CON_SetIsTTY', '_fopen']" \
     -s EXPORT_NAME=\"ioq3ded\"
 
   SHLIBEXT=js
