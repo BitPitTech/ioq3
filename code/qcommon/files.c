@@ -263,6 +263,7 @@ static	cvar_t		*fs_gogpath;
 #if EMSCRIPTEN
 static	cvar_t		*fs_cdn;
 static	cvar_t		*fs_manifest;
+static  cvar_t		*fs_preload_raw;
 static	cvar_t		*fs_completeManifest;
 #endif
 
@@ -3551,6 +3552,7 @@ static void FS_Startup( const char *gameName, cb_context_t *after )
 #if EMSCRIPTEN
 	fs_cdn = Cvar_Get("fs_cdn", "local", CVAR_INIT | CVAR_SERVERINFO);
 	fs_manifest = Cvar_Get("fs_manifest", "", CVAR_ROM | CVAR_SERVERINFO);
+	fs_preload_raw = Cvar_Get("fs_preload_raw", "", CVAR_INIT | CVAR_ROM);
 	fs_completeManifest = Cvar_Get("fs_completeManifest", "", CVAR_ROM);
 #endif
 
