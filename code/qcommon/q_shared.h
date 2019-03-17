@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef STANDALONE
   #define PRODUCT_NAME				"bitpit"
-  #define BASEGAME					".nothing"
+  #define BASEGAME					"bitpit"
   #define CLIENT_WINDOW_TITLE		"BitPit"
   #define CLIENT_WINDOW_MIN_TITLE	"BitPit"
   #define HOMEPATH_NAME_UNIX		".bitpit"
