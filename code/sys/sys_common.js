@@ -111,10 +111,10 @@ var LibrarySysCommon = {
 			{
 				name: 'bitpit.x86.jar',
 				offset: 0,
-				checksum: 1264329086,
+				checksum: 590291691,
 				paks: [
-					{ src: './bitpit/pak0.pk3', dest: './bitpit/pak0.pk3', checksum: 414178816 },
-					{ src: './bitpit/pak9.pk3', dest: './bitpit/pak9.pk3', checksum: 2197020149 }
+					{ src: './bitpit/pak0.pk3', dest: './bitpit/pak0.pk3', checksum: 706225976 },
+					{ src: './bitpit/pak9.pk3', dest: './bitpit/pak9.pk3', checksum: 3938727792 }
 				]
 			}
 		],
@@ -205,8 +205,7 @@ var LibrarySysCommon = {
 		},
 		DownloadAsset: function (asset, onprogress, onload) {
 			var root = SYSC.GetCDN();
-			var name = asset.name.replace(/(.+\/|)(.+?)$/, '$1' + asset.checksum + '-$2');
-			var url = 'https://' + root + '/assets/' + asset.checksum + "-" + asset.name + ".jar";
+			var url = 'https://' + root + '/assets/' + asset.checksum + "-" + asset.name;
 
 			SYS.DoXHR(url, {
 				dataType: 'arraybuffer',
@@ -243,11 +242,11 @@ var LibrarySysCommon = {
 		},
 		UpdateManifest: function (callback) {
 			var fs_cdn = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('fs_cdn'), 'i8', ALLOC_STACK)));
-			var fs_game = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('fs_game'), 'i8', ALLOC_STACK)));
+			var com_basegame = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('com_basegame'), 'i8', ALLOC_STACK)));
 			var url = 'https://' + fs_cdn + '/assets/manifest.json';
 
 			function activePaks(entry) {
-				return entry.name.startsWith(fs_game + ".") && entry.name.endsWith(".x86.jar");
+				return entry.name.startsWith(com_basegame + ".") && entry.name.endsWith(".x86.jar");
 			}
 
 			function formatManifestString(manifest) {
@@ -375,21 +374,13 @@ var LibrarySysCommon = {
 		},
 		GetPreloadRawAssetConfiguration: function () {
 			var name = allocate(intArrayFromString('fs_preload_raw'), 'i8', ALLOC_STACK);
-
 			var fs_preload_raw = Pointer_stringify(_Cvar_VariableString(name));
 			if (!fs_preload_raw || fs_preload_raw.length == 0) { return null; }
+			fs_preload_raw = atob(fs_preload_raw.replace(/-/g, '+').replace(/_/g, '/'));
 
-			var commaIndex = fs_preload_raw.lastIndexOf(',');
-			if (commaIndex < 0) { return null; }
-
-			var url = fs_preload_raw.substring(0, commaIndex);
-			var hash = fs_preload_raw.substring(commanIndex + 1);
-			return {
-				url: url,
-				hash: hash.toLowerCase()
-			};
+			return JSON.parse(fs_preload_raw);
 		},
-		SyncPreloadRaw: function (callback, onprogress) {
+		SyncPreloadRaw: function (callback) {
 			var preload = SYSC.GetPreloadRawAssetConfiguration();
 			if (!preload) { return callback(); }
 
@@ -403,12 +394,7 @@ var LibrarySysCommon = {
 				// Directory exists, just continue with the download process.
 			}
 
-			var assetName = (function() {
-				var index = preload.url.lastIndexOf("/");
-				return index >= 0 ? preload.url.substring(index + 1) : url;
-			})();
-
-			SYS.LoadingDescription('loading ' + assetName);
+			SYS.LoadingDescription('Loading ' + preload.name);
 			SYS.DoXHR(preload.url, {
 				dataType: 'arraybuffer',
 				onprogress: function(loaded, total) {
@@ -423,46 +409,21 @@ var LibrarySysCommon = {
 						return callback(new Error('Invalid asset hash: ' + downloadedHash));
 					}
 
-					var gunzip = new Zlib.Gunzip(data);
-					var buffer = gunzip.decompress();
-					var tar = new Tar(buffer);
-					
 					var localTempPath = PATH.join(fs_homepath, preload.hash + "_temp");
 
-					function ensureDirectoryExists(rootPath, relativePath) {
+					try {
+						const filename = preload.hash + '.pk3';
+						var localPath = PATH.join(localTempPath, filename);
+
 						try {
-							FS.mkdir(rootPath, 0777);
+							FS.mkdir(PATH.dirname(localPath), 0777);
 						} catch (e) {
 							if (e.errno !== ERRNO_CODES.EEXIST) {
-								throw e;
+								return callback(e);
 							}
 						}
-						if (relativePath == "." || relativePath == "") {
-							return;
-						}
-						var pathSegments = relativePath.split("/");
-						for (var i = 1; i < pathSegments; ++i) {
-							var fullPath = PATH.join(rootPath, pathSegments.slice(0, i).join("/"));
-							try {
-								FS.mkdir(fullPath, 0777);
-							} catch (e) {
-								if (e.errno !== ERRNO_CODES.EEXIST) {
-									throw e;
-								}
-							}
-						}
-					}
 
-					try {
-						Object.getOwnPropertyNames(tar.getMembers()).forEach(function (pakPath) {
-							ensureDirectoryExists(localTempPath, PATH.dirname(pakPath));
-							var localPath = PATH.join(localTempPath, pakPath);
-
-							var buffer = tar.getContent(pakPath);
-							if (buffer == null) { throw new Error('File doesn\'t exist: ' + pakPath); }
-
-							FS.writeFile(localPath, new Uint8Array(buffer), { encoding: 'binary', flags: 'w', canOwn: true });
-						});
+						FS.writeFile(localPath, new Uint8Array(data), { encoding: 'binary', flags: 'w', canOwn: true });
 
 						FS.rename(localTempPath, localSuccessPath);
 						FS.syncfs(callback);
@@ -500,7 +461,7 @@ var LibrarySysCommon = {
 				SYSC.SyncInstallers(function (err) {
 					if (err) return callback(err);
 
-					SYSC.PreloadRaw(callback);
+					SYSC.SyncPreloadRaw(callback);
 				});
 			});
 		},
